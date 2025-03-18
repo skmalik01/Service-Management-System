@@ -1,4 +1,5 @@
-# app/controllers.py
+from flask import jsonify, make_response
+from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies
 from app.models import User, Product, RepairRequest, db
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -30,3 +31,19 @@ def register_user(username, password, role):
     db.session.add(new_user)
     db.session.commit()
     return {"message": f"{role.capitalize()} registered successfully"}
+
+def login_user(username, password):
+    user = User.query.filter_by(username=username).first()
+    if not user or not check_password_hash(user.password, password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    access_token = create_access_token(identity=str(user.id), additional_claims={"role": user.role})
+
+    response = make_response(jsonify({"message": "Login successful"}))
+    set_access_cookies(response, access_token)  
+    return response
+
+def logout_user():
+    response = make_response(jsonify({"message": "Logged out successfully"}))
+    unset_jwt_cookies(response)  
+    return response
