@@ -1,22 +1,17 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
-from app.config import Config
-from app.extensions import db, migrate, ma
-from app.routes import main
-from app.auth import auth
 
-jwt = JWTManager()
+app = Flask(__name__)
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)  
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:malik0112@localhost:5000/service_system'
+app.config['SECRET_KEY'] = 'supersecretkey'
+app.config['JWT_SECRET_KEY'] = 'jwtsecretkey'
 
-    db.init_app(app)
-    migrate.init_app(app, db)
-    ma.init_app(app)
-    jwt.init_app(app)  
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
 
-    app.register_blueprint(auth, url_prefix='/auth')
-    app.register_blueprint(main)
+from app import routes
 
-    return app
+with app.app_context():
+    db.create_all()
