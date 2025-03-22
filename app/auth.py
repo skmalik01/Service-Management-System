@@ -6,7 +6,7 @@ def role_required(role):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
-            claims = get_jwt()  # ✅ Fetch claims to get role
+            claims = get_jwt()
             if claims.get("role") != role:
                 return jsonify({"error": "Unauthorized Access"}), 403
             return fn(*args, **kwargs)
